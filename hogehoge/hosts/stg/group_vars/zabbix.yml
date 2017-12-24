@@ -1,0 +1,23 @@
+######
+#
+# ansible/hosts/stg/group_vars/zabbix.yml
+#
+######
+
+# Target: zabbix-agent
+agent_host_name: "stg-zabbix"
+
+# Target: fluentd
+td_agent_conf: "zabbix_td_agent_conf.j2"
+
+pos_directory:
+  - syslog
+  - auth
+  - zabbix
+  - ansible
+
+# Target: logrotate
+logrotate:
+  - ansible
+
+apache2_log_watch: false

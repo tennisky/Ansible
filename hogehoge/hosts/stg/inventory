@@ -1,0 +1,14 @@
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+
+[vpn]
+"IP Address"
+
+[api]
+# api1
+"IP Address"
+# api2
+"IP Address" 
+
+[zabbix]
+"IP Address" 

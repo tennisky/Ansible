@@ -1,0 +1,11 @@
+######
+#
+# ansible/role/apache2/handlers/main.yml
+#
+######
+
+---
+- name: restart apache
+  service:
+    name: "{{ apache_service }}"
+    state: "{{ apache_restart_state }}"

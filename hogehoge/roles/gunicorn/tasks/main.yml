@@ -1,0 +1,21 @@
+######
+#
+# ansible/role/gunicorn/tasks/main.yml
+#
+######
+
+---
+- name: Install system packages
+  pip:
+    name: gunicorn
+    version: 19.7.1
+
+- name: copy gunicorn service
+  template:
+    src: ./roles/gunicorn/templates/gunicorn.service.j2
+    dest: /etc/systemd/system/gunicorn.service
+
+- name: copy gunicorn socket
+  template:
+    src: ./roles/gunicorn/templates/gunicorn_socket.j2
+    dest: /etc/systemd/system/gunicorn.socket

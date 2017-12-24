@@ -1,0 +1,143 @@
+#######
+#
+# ansible/role/apache2/tasks/main.yml
+#
+#######
+
+---
+# Include variables and define needed variables.
+- name: Include OS-specific variables.
+  include_vars: "{{ ansible_os_family }}.yml"
+
+- name: Include variables for Amazon Linux.
+  include_vars: "AmazonLinux.yml"
+  when: ansible_distribution == "Amazon" and ansible_distribution_major_version == "NA"
+
+- name: Define apache_packages.
+  set_fact:
+    apache_packages: "{{ __apache_packages | list }}"
+  when: apache_packages is not defined
+
+# Setup/install tasks.
+- include: "setup-{{ ansible_os_family }}.yml"
+  static: no
+
+# Figure out what version of Apache is installed.
+- name: Get installed version of Apache.
+  shell: "{{ apache_daemon_path }}{{ apache_daemon }} -v"
+  changed_when: false
+  check_mode: no
+  register: _apache_version
+
+- name: Create apache_version variable.
+  set_fact:
+    apache_version: "{{ _apache_version.stdout.split()[2].split('/')[1] }}"
+
+- include_vars: apache-22.yml
+  when: "apache_version.split('.')[1] == '2'"
+
+- include_vars: apache-24.yml
+  when: "apache_version.split('.')[1] == '4'"
+
+# Configure Apache.
+- include: "configure-{{ ansible_os_family }}.yml"
+  static: no
+
+- name: Ensure Apache has selected state and enabled on boot.
+  service:
+    name: "{{ apache_service }}"
+    state: "{{ apache_state }}"
+    enabled: yes 
+
+######
+#
+# 対応分
+#
+######
+
+- name: change wsgi.conf
+  lineinfile:
+    path: "/etc/apache2/mods-available/wsgi.conf"
+    state: present
+    backrefs: yes
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  with_items:
+    - regexp: "#WSGILazyInitialization On|Off"
+      line: "WSGILazyInitialization Off"
+
+- name: Basic authentication
+  shell: "htpasswd -c -b /etc/apache2/.htpasswd {{ basic_authentication_username }} {{ basic_authentication_password }}"
+ 
+- name: change mpm_event.conf
+  copy:
+    src: ./roles/apache2/files/mpm_event.conf
+    dest: /etc/apache2/mods-available/mpm_event.conf
+
+- name: mkdir /var/log/apache2
+  file:
+    path: /var/log/apache2
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+
+- name: touch ncom_ars-access.log
+  file:
+    path: /var/log/apache2/ncom_ars-access.log
+    owner: www-data
+    group: www-data
+    mode: 0777
+    state: touch
+ 
+- name: touch ncom_ars-error.log
+  file:
+    path: /var/log/apache2/ncom_ars-error.log
+    owner: www-data
+    group: www-data
+    mode: 0777
+    state: touch
+
+- name: find access.logs
+  find:
+    paths: /var/log/apache2/
+    patterns: "access*"
+  register: access_logs
+
+- name: chmod access.logs
+  file:
+    path: "{{ item.path }}"
+    mode: 0644
+  with_items:
+    - "{{ access_logs.files }}"
+
+- name: find error.logs
+  find:
+    paths: /var/log/apache2/
+    patterns: "error*"
+  register: error_logs
+
+- name: chmod error.logs
+  file:
+    path: "{{ item.path }}"
+    mode: 0644
+  with_items:
+    - "{{ error_logs.files }}"
+
+- name: a2enmod some service
+  apache2_module:
+    state: present
+    name: "{{ item }}"
+  with_items:
+    - proxy
+    - proxy_http
+    - mpm_event
+  notify: restart apache
+
+- name: a2dismod mpm_prefork
+  apache2_module:
+    state: absent
+    name: "{{ item }}"
+  with_items:
+    - mpm_prefork
+  notify: restart apache

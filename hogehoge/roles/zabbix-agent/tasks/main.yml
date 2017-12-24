@@ -1,0 +1,45 @@
+######
+#
+# ansible/role/zabbix-agent/tasks/main.yml
+#
+######
+
+---
+- name: install zabbix-release_3.0-1+xenial_all.deb
+  apt:
+    deb: http://repo.zabbix.com/zabbix/3.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.0-1+xenial_all.deb
+    update_cache: yes
+
+- name: Debian | Installing zabbix-agent
+  apt:
+    pkg: zabbix-agent
+    state: present
+    install_recommends: no
+    update_cache: yes
+    cache_valid_time: 0
+  become: yes
+
+- name: set zabbix_agentd.conf
+  template:
+    src: ./roles/zabbix-agent/templates/zabbix_agentd.conf.j2
+    dest: /etc/zabbix/zabbix_agentd.conf
+
+- name: find syslog
+  find:
+    paths: /var/log/
+    patterns: "syslog*"
+  register: syslog
+
+- name: chmod syslog
+  file:
+    path: "{{ item.path }}"
+    mode: 0644
+  with_items:
+    - "{{ syslog.files }}"
+
+- name: service restart
+  service:
+    name: zabbix-agent
+    state: restarted
+    enabled: yes
+    use: service

@@ -1,0 +1,17 @@
+######
+#
+# ansible/hosts/stg/group_vars/vpn.yml
+#
+######
+
+# Target: fluentd
+pos_directory:
+  - syslog
+  - auth
+  - zabbix
+  - softether
+
+td_agent_conf: "vpn_td_agent_conf.j2"
+
+# Target: zabbix-agent
+agent_host_name: "stg-vpn"

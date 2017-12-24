@@ -1,0 +1,8 @@
+/var/log/ansible/ansible.log{
+  daily
+  rotate 30
+  missingok
+  notifempty
+  delaycompress
+  compress
+}

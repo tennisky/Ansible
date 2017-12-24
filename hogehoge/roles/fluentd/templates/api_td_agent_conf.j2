@@ -1,0 +1,77 @@
+<source>
+  @type tail
+  format apache2
+  path /var/log/apache2/access.log
+  pos_file /var/log/td-agent/buffer/apache2/apache2.access.log.pos
+  tag s3.apache2.access
+</source>
+
+<source>
+  @type tail
+  format apache_error
+  path /var/log/apache2/error.log
+  pos_file /var/log/td-agent/buffer/apache2/apache2.error.log.pos
+  tag s3.apache2.error
+</source>
+
+<source>
+  @type tail
+  format apache2
+  path /var/log/apache2/hogehoge-access.log
+  pos_file /var/log/td-agent/buffer/apache2/hogehoge-access.log.pos
+  tag s3.apache2.hogehoge-access
+</source>
+
+<source>
+  @type tail
+  format apache_error
+  path /var/log/apache2/hogehoge-error.log
+  pos_file /var/log/td-agent/buffer/apache2/hogehoge-error.log.pos
+  tag s3.apache2.hogehoge-error
+</source>
+
+<source>
+  @type tail
+  format none
+  path /var/log/django/hogehoge_django.log
+  pos_file /var/log/td-agent/buffer/django/hogehoge_django.log.pos
+  tag s3.django.hogehoge_django
+</source>
+
+<source>
+  @type tail
+  format none
+  path /var/log/zabbix/zabbix_agentd.log
+  pos_file /var/log/td-agent/buffer/zabbix/agent.log.pos
+  tag s3.zabbix.agent
+</source>
+
+<source>
+  @type tail
+  format syslog
+  path /var/log/syslog
+  pos_file /var/log/td-agent/buffer/syslog/syslog.pos
+  tag s3.linux.syslog
+</source>
+
+<source>
+  @type tail
+  format none
+  path /var/log/auth.log
+  pos_file /var/log/td-agent/buffer/auth/auth.log.pos
+  tag s3.linux.auth
+</source>
+
+<match s3.*.*>
+ @type forest
+ subtype s3
+ <template>
+  s3_bucket {{ s3_bucket_name }}
+  s3_region {{ s3_region_name }}
+  buffer_type file
+  buffer_path /var/log/td-agent/buffer/${tag_parts[2]}
+  path logs/${tag_parts[1]}/${tag_parts[2]}/${hostname}/${hostname}_${tag_parts[1]}_${tag_parts[2]}_
+  time_slice_format %Y%m%d
+  flush_at_shutdown true
+ </template>
+</match>

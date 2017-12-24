@@ -1,0 +1,18 @@
+######
+#
+# ansible/api.yml
+#
+######
+
+- hosts: api
+  serial: 1
+  sudo: yes
+  remote_user: "{{ ssh_remote_user }}"
+  roles:
+    - django
+    - apache2
+    - gunicorn
+    - fluentd
+    - zabbix-agent
+    - logrotate
+    - application

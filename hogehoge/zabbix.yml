@@ -1,0 +1,13 @@
+######
+#
+# ansible/zabbix.yml
+#
+######
+
+- hosts: zabbix
+  sudo: yes
+  remote_user: "{{ ssh_remote_user }}"
+  roles:
+    - fluentd
+    - zabbix-agent
+    - logrotate

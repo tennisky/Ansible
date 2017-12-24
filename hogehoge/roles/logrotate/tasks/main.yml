@@ -1,0 +1,21 @@
+######
+#
+# ansible/role/logrotate/tasks/main.yml
+#
+######
+
+---
+- name: set logrotate_file
+  copy:
+    src: "./roles/logrotate/files/{{ item }}"
+    dest: "/etc/logrotate.d/{{ item }}" 
+  with_items: "{{ logrotate }}"  
+
+- name: chmod apache2 logs
+  lineinfile:
+    path: /etc/logrotate.d/apache2
+    state: present
+    backrefs: yes
+    regexp: "create 640 root adm"
+    line: "create 644 root adm"
+  when: apache2_log_watch

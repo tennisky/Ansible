@@ -1,0 +1,47 @@
+<source>
+  @type tail
+  format none
+  path /var/log/zabbix/zabbix_agentd.log
+  pos_file /var/log/td-agent/buffer/zabbix/agent.log.pos
+  tag s3.zabbix.agent
+</source>
+
+<source>
+  @type tail
+  format none
+  path /usr/local/vpnserver/server_log/vpn_%Y%m%d.log
+  pos_file /var/log/td-agent/buffer/softether/server.log.pos
+  tag s3.softether.server
+</source>
+
+<source>
+  @type tail
+  format syslog
+  path /var/log/syslog
+  pos_file /var/log/td-agent/buffer/syslog/syslog.pos
+  tag s3.linux.syslog
+</source>
+
+<source>
+  @type tail
+  format none
+  path /var/log/auth.log
+  pos_file /var/log/td-agent/buffer/auth/auth.log.pos
+  tag s3.linux.auth
+</source>
+
+<match s3.*.*>
+ @type forest
+ subtype s3
+ <template>
+  s3_bucket {{ s3_bucket_name }}
+  s3_region {{ s3_region_name }}
+  buffer_type file
+  buffer_path /var/log/td-agent/buffer/${tag_parts[2]}
+  path logs/${tag_parts[1]}/${tag_parts[2]}/${hostname}/${hostname}_${tag_parts[1]}_${tag_parts[2]}_
+  time_slice_format %Y%m%d
+  flush_at_shutdown true
+ </template>
+
+</match>
+

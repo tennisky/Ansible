@@ -1,0 +1,13 @@
+######
+#
+# ansible/role/apache2/vars/apache-24.yml
+#
+######
+
+apache_vhosts_version: "2.4"
+apache_default_vhost_filename: 000-default.conf
+apache_ports_configuration_items:
+  - {
+    regexp: "^Listen ",
+    line: "Listen {{ apache_listen_port }}"
+  }

@@ -1,0 +1,103 @@
+######
+#
+# ansible/role/application/tasks/main.yml
+#
+######
+
+---
+- name: install awscli
+  pip:
+    name: boto
+    version: 2.48.0
+
+#- name: de-register EC2 instances in ELB
+#  ec2_elb:
+#    region: "{{ aws_elb_region }}"
+#    ec2_elbs: "{{ aws_elb_ec2_elbs }}"
+#    instance_id: "{{ aws_elb_instance_id }}"
+#    state: absent
+
+- name: backup hogehoge
+  shell: cp -a hogehoge hogehoge_`date "+%Y%m%d_%H%M%S"`
+  args:
+    chdir: /srv
+  ignore_errors: True
+
+- name: copy Source
+  copy:
+    src: ./roles/application/files/hogehoge
+    dest: /srv
+
+- name: copy setting.py
+  template:
+    src: ./roles/application/templates/settings.py.j2
+    dest: /srv/hogehoge/hogehoge/settings.py
+
+#- name: register EC2 instances in ELB
+#  ec2_elb:
+#    region: "{{ aws_elb_region }}"
+#    ec2_elbs: "{{ aws_elb_ec2_elbs }}"
+#    instance_id: "{{ aws_elb_instance_id }}"
+#    state: present
+
+- name: mkdir django
+  file:
+    path: /var/log/django/
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+
+- name: touch django.log
+  file:
+    path: /var/log/django/ncom_ars_django.log
+    owner: www-data
+    group: www-data
+    mode: 0777
+    state: touch
+
+- name: reload gunicorn.socket
+  systemd:
+    name: gunicorn.socket
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  become: yes
+
+- name: reload gunicorn.service
+  systemd:
+    name: gunicorn.service
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  become: yes
+
+- name: make sure gunicorn server is running
+  service:
+    name: gunicorn
+    state: restarted
+
+######
+#
+# s3からのソース取得
+# ※ application/files 配下にsourceを用意する為、下記の処理は使用しない。※参考として保存
+#
+######
+
+#- name: boto
+#  pip:
+#    name: boto
+
+#- name: s3 GET operation
+#  s3:
+#    bucket: バケット名
+#    object: オブジェクトのフルパス
+#    dest: /home/ubuntu/.ansible/hogehoge
+#    mode: get
+#    s3_url: "S3のURL"
+
+#- name: source setting 
+#  unarchive:
+#    src: /home/ubuntu/.ansible/hogehoge
+#    dest: /srv
+#    remote_src: yes

@@ -1,0 +1,37 @@
+######
+#
+# ansible/hosts/stg/group_vars/api.yml
+#
+######
+
+# Target: apache2
+proxy_ip: "IP アドレス"
+proxy_port: 9999
+
+basic_authentication_username: "認証ユーザー名"
+basic_authentication_password: "認証パスワード"
+
+# Target:django
+db_name: "DB名"
+db_user: "DBユーザー"
+db_password: "DBパスワード"
+db_host: "DBドメイン"
+
+# Target: gunicorn
+gunicorn_worker_num: "ワーカー数"
+
+# Target: fluentd
+pos_directory: 
+  - syslog
+  - auth
+  - apache2
+  - django
+  - zabbix
+
+td_agent_conf: "api_td_agent_conf.j2"
+
+# Target: logrotate
+logrotate:
+  - django
+
+apache2_log_watch: true

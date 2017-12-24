@@ -1,0 +1,17 @@
+#####
+#
+# ansible/hosts/prd/group_vars/all.yml
+#
+#####
+
+# Target: all role 
+ssh_remote_user: ubuntu
+ssh_private_key_file: 鍵のディレクトリ
+
+# Target: fluentd
+s3_bucket_name: "バケット名"
+s3_region_name: "ap-northeast-1"
+
+# Target: zabbix-agent
+zabbix_manager_ip: "IP アドレス"
+

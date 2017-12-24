@@ -1,0 +1,20 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+PIDFile=/run/gunicorn/pid
+User=ubuntu
+Group=ubuntu
+RuntimeDirectory=gunicorn
+WorkingDirectory=/srv/hogehoge
+ExecStart=/usr/local/bin/gunicorn --pid /run/gunicorn/pid --workers={{ gunicorn_worker_num }} --bind unix:/run/gunicorn/socket hogehoge.wsgi
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+#Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

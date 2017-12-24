@@ -1,0 +1,76 @@
+######
+#
+# ansible/role/fluentd/tasks/main.yml
+#
+######
+
+---
+- name: add APT signing key for td-agent
+  apt_key: 
+    url: "https://packages.treasuredata.com/GPG-KEY-td-agent"
+    state: present
+
+- name: add td-agent repository
+  apt_repository: 
+    repo: 'deb https://packages.treasuredata.com/2/ubuntu/xenial/ xenial contrib' 
+    state: present
+
+- name: install td-agent
+  apt: 
+    name: td-agent=2.3.5-0
+    update_cache: yes
+    state: present 
+    force: yes
+
+- name: Install td-agent's plugins
+  gem: 
+    executable: /opt/td-agent/embedded/bin/fluent-gem
+    name: '{{ item }}'
+    state:  present
+    user_install: no
+  with_items:
+    - fluent-plugin-s3
+    - fluent-plugin-forest 
+
+- name: change td_agent_user
+  lineinfile:
+    path: /etc/init.d/td-agent
+    state: present
+    backrefs: yes
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  with_items:
+    - regexp: 'TD_AGENT_USER=td-agent'
+      line: 'TD_AGENT_USER=root'
+    - regexp: 'TD_AGENT_GROUP=td-agent'
+      line: 'TD_AGENT_GROUP=root'
+
+- name: change limits.conf
+  lineinfile:
+    path: /etc/security/limits.conf
+    line: "{{ item }}"
+  with_items:
+    - "root soft nofile 65536"
+    - "root hard nofile 65536"
+    - "* soft nofile 65536"
+    - "* hard nofile 65536"
+    
+- name: change td-agent.conf
+  template:
+    src: "./roles/fluentd/templates/{{ td_agent_conf }}"
+    dest: /etc/td-agent/td-agent.conf
+    mode: 0644
+
+- name: make pos_directory
+  file:
+    path: "/var/log/td-agent/buffer/{{ item }}"
+    owner: root
+    group: root
+    state: directory
+  with_items: "{{ pos_directory }}"
+
+- name: restart td-agent service
+  service:
+    name: td-agent
+    state: restarted
+    enabled: yes

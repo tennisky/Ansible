@@ -1,0 +1,9 @@
+######
+#
+# ansible/ansibleplaybook.yml
+#
+######
+
+- include: vpn.yml
+- include: api.yml
+- include: zabbix.yml

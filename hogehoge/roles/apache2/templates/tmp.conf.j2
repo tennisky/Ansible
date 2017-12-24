@@ -1,0 +1,16 @@
+<VirtualHost *:80>
+    DocumentRoot /var/www/html
+    ProxyRequests Off
+
+    <Location /recommendations/*>
+        ProxyPass http://{{ proxy_ip }}:{{ proxy_port }}
+        ProxyPassReverse http://{{ proxy_ip }}:{{ proxy_port }}
+        AuthType Basic
+        AuthName "Basic Auth" 
+        AuthUserFile /etc/apache2/.htpasswd
+        Require valid-user {{ basic_authentication_username }}
+    </Location>
+
+    CustomLog /var/log/apache2/access.log combined
+    ErrorLog /var/log/apache2/error.log
+</VirtualHost>

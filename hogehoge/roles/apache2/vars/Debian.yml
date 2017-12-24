@@ -1,0 +1,20 @@
+######
+#
+# ansible/role/apache2/vars/Debian.yml
+#
+######
+
+apache_service: apache2
+apache_daemon: apache2
+apache_daemon_path: /usr/sbin/
+apache_server_root: /etc/apache2
+apache_conf_path: /etc/apache2
+
+__apache_packages:
+  - apache2=2.4.18-2ubuntu3.4
+  - apache2-utils=2.4.18-2ubuntu3.4
+  - libapache2-mod-wsgi=4.3.0-1.1build1 
+
+apache_ports_configuration_items:
+  - regexp: "^Listen "
+    line: "Listen {{ apache_listen_port }}"
